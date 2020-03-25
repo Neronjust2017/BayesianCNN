@@ -96,12 +96,33 @@ def validate_model(net, criterion, validloader, num_ens=1):
 
     return valid_loss/len(validloader), np.mean(accs)
 
+def test_model(net, criterion, testloader, num_ens=1):
+    """Calculate ensemble accuracy and NLL Loss"""
+    net.eval()
+    test_loss = 0.0
+    accs = []
+
+    for i, (inputs, labels) in enumerate(testloader):
+        inputs, labels = inputs.to(device), labels.to(device)
+        outputs = torch.zeros(inputs.shape[0], net.num_classes, num_ens).to(device)
+        kl = 0.0
+        for j in range(num_ens):
+            net_out, _kl = net(inputs)
+            kl += _kl
+            outputs[:, :, j] = F.log_softmax(net_out, dim=1).data
+
+        log_outputs = utils.logmeanexp(outputs, dim=2)
+        test_loss += criterion(log_outputs, labels, kl).item()
+        accs.append(metrics.acc(log_outputs, labels))
+
+    return test_loss / len(testloader), np.mean(accs)
 
 def run(dataset, net_type):
 
     # Hyper Parameter settings
     train_ens = cfg.train_ens
     valid_ens = cfg.valid_ens
+    test_ens = cfg.test_ens
     n_epochs = cfg.n_epochs
     lr_start = cfg.lr_start
     num_workers = cfg.num_workers
@@ -138,6 +159,15 @@ def run(dataset, net_type):
                 valid_loss_max, valid_loss))
             torch.save(net.state_dict(), ckpt_name)
             valid_loss_max = valid_loss
+
+    # test saved model
+    best_model = getModel(net_type, inputs, outputs).to(device)
+    best_model.load_state_dict(torch.load(ckpt_name))
+    test_loss, test_acc = test_model(best_model, criterion, test_loader, num_ens=test_ens)
+    print(
+        'Test Loss: {:.4f} \tTest Accuracy: {:.4f} '.format(
+            test_loss, test_acc))
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = "PyTorch Bayesian Model Training")

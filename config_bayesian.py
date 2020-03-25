@@ -6,6 +6,7 @@ valid_size = 0.2
 batch_size = 500
 train_ens = 1
 valid_ens = 1
+test_ens = 1
 
 record_mean_var = True
 recording_freq_per_epoch = 5     # 32
