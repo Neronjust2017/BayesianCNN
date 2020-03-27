@@ -48,10 +48,10 @@ class BBBLinear(ModuleWrapper):
         sigma = torch.exp(self.log_alpha) * self.W * self.W
 
         std = torch.sqrt(1e-16 + F.linear(x * x, sigma))
-        if self.training:
-            epsilon = std.data.new(std.size()).normal_()
-        else:
-            epsilon = 0.0
+        # if self.training:
+        epsilon = std.data.new(std.size()).normal_()
+        # else:
+        #     epsilon = 0.0
         # Local reparameterization trick
         out = mean + std * epsilon
 

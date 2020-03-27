@@ -58,10 +58,10 @@ class BBBConv1d(ModuleWrapper):
         sigma = torch.exp(self.log_alpha) * self.weight * self.weight
 
         std = torch.sqrt(1e-16 + self.out_nobias(x * x, sigma))
-        if self.training:
-            epsilon = std.data.new(std.size()).normal_()
-        else:
-            epsilon = 0.0
+        # if self.training:
+        epsilon = std.data.new(std.size()).normal_()
+        # else:
+        #     epsilon = 0.0
 
         # Local reparameterization trick
         out = mean + std * epsilon
