@@ -62,6 +62,51 @@ def getDataset(dataset):
 
     return trainset, testset, inputs, num_classes
 
+def getDataset_regression(dataset):
+    if(dataset == 'fake'):
+        x = np.arange(-7.5, 7.5, 0.01)
+        y = x + (0.3 * np.sin(2 * np.pi * (x))) + (0.3 * np.sin(4 * np.pi * (x)))
+        N = x.shape[0]
+
+    elif(dataset == 'ccpp'):
+        from openpyxl import load_workbook
+        workbook = load_workbook(filename='datasets/CCPP/Folds5x2_pp.xlsx')
+        sheet = workbook.get_sheet_by_name("Sheet1")
+        data = []
+        row_num = 2
+        while row_num <= 9569:
+            sample = []
+            for i in range(5):
+                sample.append(sheet.cell(row=row_num, column=i+1).value)
+            sample = np.array(sample)
+            data.append(sample)
+            row_num = row_num + 1
+        data = np.array(data)
+
+        N = data.shape[0]
+        ind = int(N * 0.9)
+        train_data = data[:ind]
+        test_data = data[ind:]
+        x_train = train_data[:,:4]
+        y_train = train_data[:,4]
+        x_test = test_data[:,:4]
+        y_test = test_data[:,4]
+
+        x_train = torch.from_numpy(x_train).float()
+        y_train = torch.from_numpy(y_train)
+        print(x_train.size(), y_train.size())
+        trainset = torch.utils.data.TensorDataset(x_train, y_train)
+
+        x_test = torch.from_numpy(x_test).float()
+        y_test = torch.from_numpy(y_test)
+        print(x_test.size(), y_test.size())
+        testset = torch.utils.data.TensorDataset(x_test, y_test)
+
+        inputs = 4
+        outputs = 1
+    return trainset, testset, inputs, outputs
+
+
 def getDataloader(trainset, testset, valid_size, batch_size, num_workers):
     num_train = len(trainset)
     indices = list(range(num_train))
