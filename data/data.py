@@ -93,12 +93,12 @@ def getDataset_regression(dataset):
         y_test = test_data[:,4]
 
         x_train = torch.from_numpy(x_train).float()
-        y_train = torch.from_numpy(y_train)
+        y_train = torch.from_numpy(y_train).float()
         print(x_train.size(), y_train.size())
         trainset = torch.utils.data.TensorDataset(x_train, y_train)
 
         x_test = torch.from_numpy(x_test).float()
-        y_test = torch.from_numpy(y_test)
+        y_test = torch.from_numpy(y_test).float()
         print(x_test.size(), y_test.size())
         testset = torch.utils.data.TensorDataset(x_test, y_test)
 
