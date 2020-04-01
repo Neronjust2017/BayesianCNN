@@ -127,8 +127,8 @@ def test_model(net, criterion, testloader, num_ens=1):
     return test_loss/len(testloader), np.mean(np.array(mses))
 
 
-def test_uncertainty(net, testset):
-    num_ens = 100
+def test_uncertainty(net, testset, data='ccpp'):
+    num_ens = 10
     # samples = []
     # for i, (inputs, targets) in enumerate(test_loader):
     #     inputs, targets = inputs.to(device), targets.to(device)
@@ -148,8 +148,8 @@ def test_uncertainty(net, testset):
     # total_unc = (aleatoric ** 2 + epistemic ** 2) ** 0.5
     inputs = testset[:len(testset)][0]
     targets = testset[:len(testset)][1]
-    print(inputs)
-    print(targets)
+    # print(inputs)
+    # print(targets)
     inputs, targets = inputs.to(device), targets.to(device)
     outputs = torch.zeros(inputs.shape[0], net.outputs, num_ens).to(device)
     for j in range(num_ens):
@@ -171,6 +171,16 @@ def test_uncertainty(net, testset):
 
     inputs = inputs.cpu().data.numpy()
     targets = targets.cpu().data.numpy()
+
+    print("偶然误差aleatoric:")
+    print(aleatoric)
+    print("(样本标签, mean, Standard Deviation)")
+    print(list(zip(targets, means,epistemic)))
+
+    if data == 'uci_har':
+        plt.scatter(targets,means, s=10, marker='x', color='black', alpha=0.5)
+        plt.show()
+        return
 
     for i in range(4):
         print("Dim %d: " % (i + 1))
@@ -265,12 +275,13 @@ def run(dataset, net_type, train=True):
     test_loss, test_mse = test_model(best_model, criterion, test_loader, num_ens=test_ens)
     print('Test Loss: {:.4f} \tTest MSE: {:.4f} '.format(
             test_loss, test_mse))
-    test_uncertainty(best_model, testset[:100])
+    test_uncertainty(best_model, testset[:500], data='uci_har')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = "PyTorch Bayesian Model Training")
-    parser.add_argument('--net_type', default='3liner', type=str, help='model')
-    parser.add_argument('--dataset', default='ccpp', type=str, help='dataset = [Power plant]')
+    # 在这里指定model和数据
+    parser.add_argument('--net_type', default='3conv3fc', type=str, help='model')
+    parser.add_argument('--dataset', default='uci_har', type=str, help='dataset = [ccpp, uci_har]')
     args = parser.parse_args()
 
     if cfg.record_mean_var:

@@ -63,10 +63,33 @@ def getDataset(dataset):
     return trainset, testset, inputs, num_classes
 
 def getDataset_regression(dataset):
-    if(dataset == 'fake'):
-        x = np.arange(-7.5, 7.5, 0.01)
-        y = x + (0.3 * np.sin(2 * np.pi * (x))) + (0.3 * np.sin(4 * np.pi * (x)))
-        N = x.shape[0]
+    if(dataset == 'uci_har'):
+        file_name = 'datasets/UCI_HAR_Dataset'
+        x_train, y_train, x_test, y_test = readmts_uci_har(file_name)
+        data = np.concatenate((x_train, x_test), axis=0)
+        label = np.concatenate((y_train, y_test), axis=0)
+        N = data.shape[0]
+        ind = int(N * 0.9)
+        x_train = data[:ind]
+        y_train = label[:ind]
+        x_test = data[ind:]
+        y_test = label[ind:]
+
+        x_train = x_train.swapaxes(1, 2)
+        x_test = x_test.swapaxes(1, 2)
+
+        x_train = torch.from_numpy(x_train).float()
+        y_train = torch.from_numpy(y_train).float()
+        print(x_train.size(), y_train.size())
+        trainset = torch.utils.data.TensorDataset(x_train, y_train)
+
+        x_test = torch.from_numpy(x_test).float()
+        y_test = torch.from_numpy(y_test).float()
+        print(x_test.size(), y_test.size())
+        testset = torch.utils.data.TensorDataset(x_test, y_test)
+
+        inputs = 9
+        outputs = 1
 
     elif(dataset == 'ccpp'):
         from openpyxl import load_workbook

@@ -17,7 +17,7 @@ class BBB3Conv3FC_1D(ModuleWrapper):
     def __init__(self, outputs, inputs, init_log_noise):
         super(BBB3Conv3FC_1D, self).__init__()
 
-        self.num_classes = outputs
+        self.outputs = outputs
 
         self.conv1 = BBBConv1d(inputs, 32, 5, alpha_shape=(1,1), padding=2, bias=False, name='conv1')
         self.soft1 = nn.Softplus()
