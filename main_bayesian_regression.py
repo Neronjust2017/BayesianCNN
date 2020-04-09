@@ -27,12 +27,12 @@ def getModel(net_type, inputs, outputs):
     #     return BBBLeNet(outputs,inputs)
     # elif (net_type == 'alexnet'):
     #     return BBBAlexNet(outputs, inputs)
-    if (net_type == '3conv3fc'):
+    if (net_type == '3conv3fc_1d'):
         return BBB3Conv3FC_1D(outputs,inputs,init_log_noise=0)
     elif(net_type == '3liner'):
         return BBB3Liner(outputs, inputs, init_log_noise=0)
     else:
-        raise ValueError('Network should be either [LeNet / AlexNet / 3Conv3FC')
+        raise ValueError('Network should be either [3conv3fc_1d,3liner]')
 
 
 def train_model(net, optimizer, criterion, trainloader, num_ens=1):
@@ -178,6 +178,16 @@ def test_uncertainty(net, testset, data='ccpp'):
     print(list(zip(targets, means,epistemic)))
 
     if data == 'uci_har':
+        fig, axs = plt.subplots(1, 6, figsize=(20, 2))
+        for i in range(6):
+            values = []
+            for target, mean in zip(targets, means):
+                if target == i+1 :
+                    values.append(mean)
+
+            axs[i].hist(values, alpha=0.5)
+        plt.show()
+
         plt.scatter(targets,means, s=10, marker='x', color='black', alpha=0.5)
         plt.show()
         return
@@ -280,7 +290,7 @@ def run(dataset, net_type, train=True):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = "PyTorch Bayesian Model Training")
     # 在这里指定model和数据
-    parser.add_argument('--net_type', default='3conv3fc', type=str, help='model')
+    parser.add_argument('--net_type', default='3conv3fc_1d', type=str, help='model')
     parser.add_argument('--dataset', default='uci_har', type=str, help='dataset = [ccpp, uci_har]')
     args = parser.parse_args()
 
