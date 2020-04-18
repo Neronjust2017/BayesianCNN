@@ -49,7 +49,16 @@ class BBBLinear(ModuleWrapper):
 
         std = torch.sqrt(1e-16 + F.linear(x * x, sigma))
         # if self.training:
-        epsilon = std.data.new(std.size()).normal_()
+
+        #############################
+        # epsilon = std.data.new(std.size()).normal_()
+        #############################
+
+        # means = torch.zeros(std.size())
+        # epsilon = torch.normal(mean=means, std=1.0)
+        print("std.size:", std.size())
+        epsilon = torch.randn(std.size())
+
         # else:
         #     epsilon = 0.0
         # Local reparameterization trick

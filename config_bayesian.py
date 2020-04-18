@@ -1,5 +1,5 @@
 ############### Configuration file for Bayesian ###############
-n_epochs = 500
+n_epochs = 100
 lr_start = 0.001
 num_workers = 0
 valid_size = 0.2
@@ -8,7 +8,7 @@ train_ens = 1
 valid_ens = 1
 test_ens = 1
 
-record_mean_var = True
+record_mean_var = False
 recording_freq_per_epoch = 5     # 32
 record_layers = ['fc3']
 
