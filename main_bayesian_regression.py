@@ -302,4 +302,4 @@ if __name__ == '__main__':
         for file in os.listdir(mean_var_dir):
             os.remove(mean_var_dir + file)
 
-    run(args.dataset, args.net_type, train=False)
+    run(args.dataset, args.net_type, train=True)
