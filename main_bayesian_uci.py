@@ -159,6 +159,9 @@ def run(dataset, net_type, train=True):
 
             print('Epoch: {} \tTraining Loss: {:.4f} \tTraining Accuracy: {:.4f} \tValidation Loss: {:.4f} \tValidation Accuracy: {:.4f} \ttrain_kl_div: {:.4f}'.format(
                 epoch, train_loss, train_acc, valid_loss, valid_acc, train_kl))
+            print(
+                'Training Loss: {:.4f} \tTraining Likelihood Loss: {:.4f} \tTraining Kl Loss: {:.4f}'.format(
+                    train_loss, train_loss-train_kl,train_kl))
 
             # save model if validation accuracy has increased
             if valid_loss <= valid_loss_max:

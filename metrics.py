@@ -14,16 +14,27 @@ class ELBO(nn.Module):
         assert not target.requires_grad
         return F.nll_loss(input, target, size_average=True) * self.train_size + kl_weight * kl
 
-class ELBO_regression(nn.Module):
+class ELBO_regression_homo(nn.Module):
     def __init__(self, train_size):
-        super(ELBO_regression, self).__init__()
+        super(ELBO_regression_homo, self).__init__()
         self.train_size = train_size
 
     def forward(self, input, target, sigma, no_dim, kl, kl_weight=1.0):
         # loss = criterion(log_outputs, labels, kl)
         assert not target.requires_grad
-        return  log_gaussian_loss(input, target,sigma, no_dim)* self.train_size + kl_weight * kl
+        return  log_gaussian_loss_homo(input, target,sigma, no_dim)* self.train_size + kl_weight * kl
+        # return log_gaussian_loss(input, target, sigma, no_dim)  + 1 / self.train_size * kl_weight * kl
 
+class ELBO_regression_hetero(nn.Module):
+    def __init__(self, train_size):
+        super(ELBO_regression_hetero, self).__init__()
+        self.train_size = train_size
+
+    def forward(self, input, target, sigma, no_dim, kl, kl_weight=1.0):
+        # loss = criterion(log_outputs, labels, kl)
+        assert not target.requires_grad
+        a = log_gaussian_loss_hetero(input, target,sigma, no_dim)
+        return  (log_gaussian_loss_hetero(input, target,sigma, no_dim)* self.train_size + kl_weight * kl)
 
 def lr_linear(epoch_num, decay_start, total_epochs, start_value):
     if epoch_num < decay_start:
@@ -41,9 +52,18 @@ def calculate_kl(log_alpha):
     return 0.5 * torch.sum(torch.log1p(torch.exp(-log_alpha)))
 
 
-def log_gaussian_loss(output, target, sigma, no_dim):
+def log_gaussian_loss_homo(output, target, sigma, no_dim):
     exponent = -0.5 * (target - output) ** 2 / sigma ** 2
     log_coeff = -no_dim * torch.log(sigma)
 
     return - (log_coeff + exponent).sum()
+
+def log_gaussian_loss_hetero(output, target, sigma, no_dim, sum_reduce=True):
+    exponent = -0.5 * (target - output) ** 2 / sigma ** 2
+    log_coeff = -no_dim * torch.log(sigma) - 0.5 * no_dim * np.log(2 * np.pi)
+
+    if sum_reduce:
+        return -(log_coeff + exponent).sum()
+    else:
+        return -(log_coeff + exponent)
 

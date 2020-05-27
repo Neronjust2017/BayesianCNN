@@ -17,10 +17,10 @@ from models.BayesianModels.regression.Bayesian3Liner import BBB3Liner
 import GPy
 import matplotlib.pyplot as plt
 import matplotlib
-matplotlib.use('TkAgg')
+# matplotlib.use('TkAgg')
 # CUDA settings
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
+# device = torch.device("cpu")
 
 def getModel(net_type, inputs, outputs):
     # if (net_type == 'lenet'):
@@ -128,7 +128,7 @@ def test_model(net, criterion, testloader, num_ens=1):
 
 
 def test_uncertainty(net, testset, data='ccpp'):
-    num_ens = 10
+    num_ens = 100
     # samples = []
     # for i, (inputs, targets) in enumerate(test_loader):
     #     inputs, targets = inputs.to(device), targets.to(device)
@@ -257,7 +257,7 @@ def run(dataset, net_type, train=True):
     if not os.path.exists(ckpt_dir):
         os.makedirs(ckpt_dir, exist_ok=True)
 
-    criterion = metrics.ELBO_regression(len(trainset)).to(device)
+    criterion = metrics.ELBO_regression_homo(len(trainset)).to(device)
 
     if train:
         optimizer = Adam(net.parameters(), lr=lr_start)
@@ -291,7 +291,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = "PyTorch Bayesian Model Training")
     # 在这里指定model和数据
     parser.add_argument('--net_type', default='3conv3fc_1d', type=str, help='model')
-    parser.add_argument('--dataset', default='uci_har', type=str, help='dataset = [ccpp, uci_har]')
+    parser.add_argument('--dataset', default='uci_har', type=str, help='dataset = [ccpp, uci_har,ppg]')
     args = parser.parse_args()
 
     if cfg.record_mean_var:

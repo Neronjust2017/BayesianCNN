@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import torch
 import torchvision
 import torchvision.transforms as transforms
@@ -127,6 +128,91 @@ def getDataset_regression(dataset):
 
         inputs = 4
         outputs = 1
+
+    elif (dataset == 'ppg'):
+
+        datafinal = pd.read_csv('datasets/PPG/data.csv', encoding='latin1', sep=',', index_col=0)
+        datafinal.reset_index()
+        d = datafinal
+        a = list(d.columns)
+        a.remove('label')
+        list(d.columns)
+        target = 'label'
+        # d['Gender'] = d['Gender'].apply(lambda r: True if (r == 'f') else False)
+        d['Gender'] = d['Gender'].apply(lambda r: 1 if (r == 'f') else 0)
+        X = d[a]
+        Y = d[target]
+
+        x = np.array(X)
+        y = np.array(Y)
+
+        from sklearn.model_selection import train_test_split
+        from sklearn.preprocessing import StandardScaler
+
+        X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.1, random_state=27)
+
+        sc = StandardScaler()
+        X_train = sc.fit_transform(X_train)
+        X_test = sc.transform(X_test)
+
+        # N = len(y_train)
+        # ind = int(N * 0.9)
+        # X_val = X_train[ind:,:]
+        # y_val = y_train[ind:]
+        # X_train = X_train[:ind,:]
+        # y_train = y_train[:ind]
+
+        x_train = torch.from_numpy(X_train).float()
+        y_train = torch.from_numpy(y_train).float()
+        print(x_train.size(), y_train.size())
+        trainset = torch.utils.data.TensorDataset(x_train, y_train)
+
+        x_test = torch.from_numpy(X_test).float()
+        y_test = torch.from_numpy(y_test).float()
+        print(x_test.size(), y_test.size())
+        testset = torch.utils.data.TensorDataset(x_test, y_test)
+
+        inputs = 20
+        outputs = 1
+    elif(dataset == 'ppg2'):
+
+        data = pd.read_csv('datasets/PPG/data.csv', encoding='latin1', sep=',')
+        data_new = data.drop(['WEIGHT', 'Gender', 'AGE', 'HEIGHT', 'SKIN', 'SPORT', 'Activity', 'EMG', 'EDA', 'Temp'],
+                             axis=1)
+        data_new = np.array(data_new)
+
+        label = data_new[::8, 0]
+        y = np.delete(label, -1, axis=0)
+        n = len(y)
+
+        data = []
+        for i in range(n):
+            ts = data_new[i * 8:(i + 1) * 8, 1:]
+            data.append(ts)
+
+        x = np.array(data)
+
+        from sklearn.model_selection import train_test_split
+        from sklearn.preprocessing import StandardScaler
+
+        X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.1, random_state=27)
+
+        X_train = X_train.swapaxes(1, 2)
+        X_test = X_test.swapaxes(1, 2)
+
+        x_train = torch.from_numpy(X_train).float()
+        y_train = torch.from_numpy(y_train).float()
+        print(x_train.size(), y_train.size())
+        trainset = torch.utils.data.TensorDataset(x_train, y_train)
+
+        x_test = torch.from_numpy(X_test).float()
+        y_test = torch.from_numpy(y_test).float()
+        print(x_test.size(), y_test.size())
+        testset = torch.utils.data.TensorDataset(x_test, y_test)
+
+        inputs = 11
+        outputs = 1
+
     return trainset, testset, inputs, outputs
 
 
