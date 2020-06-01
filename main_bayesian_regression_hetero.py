@@ -17,7 +17,7 @@ from models.BayesianModels.regression.Bayesian3Liner import BBB3Liner
 import GPy
 import matplotlib.pyplot as plt
 import matplotlib
-# matplotlib.use('TkAgg')
+matplotlib.use('TkAgg')
 # CUDA settings
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # device = torch.device("cpu")
@@ -169,6 +169,7 @@ def test_uncertainty(net, testset, data='ccpp'):
     outputs = outputs.cpu().data.numpy()
     samples = outputs[:,0,:]
     noises = outputs[:,1,:]
+    noises = np.exp(noises)
     means = samples.mean(axis=1)
     # means = means.reshape([means.shape[0]])
     aleatoric = (noises ** 2).mean(axis=1) ** 0.5
@@ -176,6 +177,8 @@ def test_uncertainty(net, testset, data='ccpp'):
     epistemic = samples.var(axis=1) ** 0.5
     # epistemic = epistemic.reshape([epistemic.shape[0]])
     total_unc = (aleatoric ** 2 + epistemic ** 2) ** 0.5
+
+    print(total_unc - aleatoric)
 
     c = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
          '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
@@ -299,13 +302,13 @@ def run(dataset, net_type, train=True):
     test_loss, test_mse = test_model(best_model, criterion, test_loader, num_ens=test_ens)
     print('Test Loss: {:.4f} \tTest MSE: {:.4f} '.format(
             test_loss, test_mse))
-    test_uncertainty(best_model, testset[:100], data='uci_har')
+    test_uncertainty(best_model, testset[:100], data='ccpp')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = "PyTorch Bayesian Model Training")
     # 在这里指定model和数据
-    parser.add_argument('--net_type', default='3conv3fc_1d', type=str, help='model')
-    parser.add_argument('--dataset', default='uci_har', type=str, help='dataset = [ccpp, uci_har,ppg]')
+    parser.add_argument('--net_type', default='3liner', type=str, help='model')
+    parser.add_argument('--dataset', default='ccpp', type=str, help='dataset = [ccpp, uci_har,ppg]')
     args = parser.parse_args()
 
     if cfg.record_mean_var:
@@ -316,4 +319,4 @@ if __name__ == '__main__':
         for file in os.listdir(mean_var_dir):
             os.remove(mean_var_dir + file)
 
-    run(args.dataset, args.net_type, train=True)
+    run(args.dataset, args.net_type, train=False)

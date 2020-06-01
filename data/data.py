@@ -116,6 +116,15 @@ def getDataset_regression(dataset):
         x_test = test_data[:,:4]
         y_test = test_data[:,4]
 
+        x_means, x_stds = x_train.mean(axis=0), x_train.var(axis=0) ** 0.5
+        y_means, y_stds = y_train.mean(axis=0), y_train.var(axis=0) ** 0.5
+
+        x_train = (x_train - x_means) / x_stds
+        y_train = (y_train - y_means) / y_stds
+
+        x_test = (x_test - x_means) / x_stds
+        y_test = (y_test - y_means) / y_stds
+
         x_train = torch.from_numpy(x_train).float()
         y_train = torch.from_numpy(y_train).float()
         print(x_train.size(), y_train.size())
